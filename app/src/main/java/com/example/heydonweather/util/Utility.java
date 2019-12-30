@@ -39,7 +39,7 @@ public class Utility {
     /**
      * 解析和处理服务器返回的市级数据
      */
-    public static boolean handleCityRespone(String response, int provinceId) {
+    public static boolean handleCityResponse(String response, int provinceId) {
         if (!TextUtils.isEmpty(response)) {
             try {
                 JSONArray allCities = new JSONArray(response);

@@ -6,9 +6,9 @@ public class Province extends DataSupport {
 
     private int id;     //实体类ID
 
-    private int provinceCode;   //省名称
+    private int provinceCode;   //省代码
 
-    private String provinceName;    //省代码
+    private String provinceName;    //省名称
 
     public int getId() {
         return id;
