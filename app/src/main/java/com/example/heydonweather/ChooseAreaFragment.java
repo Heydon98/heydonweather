@@ -90,6 +90,9 @@ public class ChooseAreaFragment extends Fragment {
         backButton = (Button) view.findViewById(R.id.back_button);
         listView = (ListView) view.findViewById(R.id.list_view);
         progressBar = (ProgressBar) view.findViewById(R.id.progressbar);
+        progressBar.setIndeterminate(true);
+        progressBar.setKeepScreenOn(true);
+        progressBar.setVisibility(View.INVISIBLE);
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
         return view;
@@ -245,18 +248,18 @@ public class ChooseAreaFragment extends Fragment {
      * 显示进度框
      */
     private void showProgressDialog() {
-//        if (progressBar == null) {
-//            progressBar = new ProgressBar(getActivity());
-//        }
-//        progressBar.setVisibility(View.VISIBLE);
+        if (progressBar.getVisibility() == View.GONE) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     /**
      * 关闭进度框
      */
     private void closeProgressDialog() {
-//        if (progressBar != null) {
-//            progressBar.setVisibility(View.GONE);
-//        }
+        if (progressBar.getVisibility() != View.GONE) {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 }
