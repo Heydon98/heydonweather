@@ -48,6 +48,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private TextView sportText;
 
+    private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,21 +66,22 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
-        SharedPreferences prefs = this.getSharedPreferences("weather", Context.MODE_PRIVATE);
+        prefs = getApplicationContext().getSharedPreferences("weather", MODE_PRIVATE);
         String weatherString = prefs.getString("weather", null);
-        String weatherId = getIntent().getStringExtra("weather_id");
-        weatherLayout.setVisibility(View.INVISIBLE);
-        requestWeather(weatherId);
-//        if (weatherString != null) {
-//            //有缓存时直接解析天气数据
-//            Weather weather = Utility.handleWeatherResponse(weatherString);
-//            showWeatherInfo(weather);
-//        } else {
-//            //无缓存直接去服务器查询
-//            String weatherId = getIntent().getStringExtra("weather_id");
-//            weatherLayout.setVisibility(View.INVISIBLE);
-//            requestWeather(weatherId);
-//        }
+//        String weatherId = getIntent().getStringExtra("weather_id");
+//        weatherLayout.setVisibility(View.INVISIBLE);
+//        requestWeather(weatherId);
+        Log.e("WA", "缓存" + weatherString);
+        if (weatherString != null) {
+            //有缓存时直接解析天气数据
+            Weather weather = Utility.handleWeatherResponse(weatherString);
+            showWeatherInfo(weather);
+        } else {
+            //无缓存直接去服务器查询
+            String weatherId = getIntent().getStringExtra("weather_id");
+            weatherLayout.setVisibility(View.INVISIBLE);
+            requestWeather(weatherId);
+        }
     }
 
     /**
@@ -113,6 +116,8 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         Log.e("WA", "status" + weather.status);
                         if (weather != null && "ok".equals(weather.status)) {
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("weather", responseText).commit();
                             showWeatherInfo(weather);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取天气数据失败,解析失败", Toast.LENGTH_SHORT).show();
