@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class Weather {
 
-    public String statue;
+    public String statues;
 
     public Basic basic;
 
