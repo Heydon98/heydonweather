@@ -6,19 +6,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="15dp"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
-<!--    日期-->
+    <!--    日期-->
     <TextView
         android:id="@+id/date_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="2"
-        android:textColor="#fff"
-        tools:ignore="Suspicious0dp" />
+        android:textColor="#fff" />
 
-<!--    天气概况-->
+    <!--    天气概况-->
     <TextView
         android:id="@+id/info_text"
         android:layout_width="0dp"
@@ -26,10 +25,9 @@
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:gravity="center"
-        android:textColor="#fff"
-        tools:ignore="Suspicious0dp" />
+        android:textColor="#fff" />
 
-<!--    最高温度-->
+    <!--    最高温度-->
     <TextView
         android:id="@+id/max_text"
         android:layout_width="0dp"
@@ -37,10 +35,9 @@
         android:layout_gravity="center"
         android:layout_weight="1"
         android:gravity="right"
-        android:textColor="#fff"
-        tools:ignore="Suspicious0dp" />
+        android:textColor="#fff" />
 
-<!--    最低温度-->
+    <!--    最低温度-->
     <TextView
         android:id="@+id/min_text"
         android:layout_width="0dp"
@@ -48,7 +45,6 @@
         android:layout_gravity="center"
         android:layout_weight="1"
         android:gravity="right"
-        android:textColor="#fff"
-        tools:ignore="Suspicious0dp" />
+        android:textColor="#fff" />
 
 </LinearLayout>

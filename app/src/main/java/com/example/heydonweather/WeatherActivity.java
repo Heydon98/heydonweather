@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -86,6 +86,7 @@ public class WeatherActivity extends AppCompatActivity {
      */
     public void requestWeather(final String weatherId) {
 
+        Log.e("WA","weatherID=" + weatherId);
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=8bbf094769c8441d9de07395c273f230";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
@@ -95,6 +96,7 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Log.e("WA", "fail");
                         Toast.makeText(WeatherActivity.this, "获取天气数据失败", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -104,14 +106,16 @@ public class WeatherActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
 
                 final String responseText = response.body().string();
+                Log.e("WA", "返回值" + responseText);
                 final Weather weather = Utility.handleWeatherResponse(responseText);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (weather != null && "ok".equals(weather.statues)) {
+                        Log.e("WA", "status" + weather.status);
+                        if (weather != null && "ok".equals(weather.status)) {
                             showWeatherInfo(weather);
                         } else {
-                            Toast.makeText(WeatherActivity.this, "获取天气数据失败", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WeatherActivity.this, "获取天气数据失败,解析失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -136,6 +140,7 @@ public class WeatherActivity extends AppCompatActivity {
         forecastLayout.removeAllViews();
         //加载预报试图
         for (Forecast forecast : weather.forecastList) {
+            Log.e("WA", "forecast" + forecast.date);
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
             TextView dataText = (TextView) view.findViewById(R.id.date_text);
             TextView infoText = (TextView) view.findViewById(R.id.info_text);

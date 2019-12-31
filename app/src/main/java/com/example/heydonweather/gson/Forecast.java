@@ -9,7 +9,7 @@ public class Forecast {
 
     public String date;
 
-    @SerializedName("temp")
+    @SerializedName("tmp")
     public Temperature temperature;
 
     @SerializedName("cond")
