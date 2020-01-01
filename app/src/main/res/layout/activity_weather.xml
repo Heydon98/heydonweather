@@ -7,6 +7,13 @@
     android:background="@color/colorPrimary"
     tools:context=".WeatherActivity">
 
+    <ImageView
+        android:id="@+id/pic_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/pic_img"
+        android:scaleType="centerCrop" />
+
     <!--    滑动菜单-->
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"

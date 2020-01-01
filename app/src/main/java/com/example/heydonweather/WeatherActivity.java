@@ -9,14 +9,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.heydonweather.gson.AQI;
 import com.example.heydonweather.gson.Forecast;
@@ -27,12 +26,9 @@ import com.example.heydonweather.service.AutoUpdateService;
 import com.example.heydonweather.util.HttpUtil;
 import com.example.heydonweather.util.Utility;
 
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
 import okhttp3.Call;
@@ -84,12 +80,12 @@ public class WeatherActivity extends AppCompatActivity {
 
     private Suggestion suggestion;
 
+    private ImageView picImg;
+
     /**
      * 控制线程同步
      */
-//    final CountDownLatch latch = new CountDownLatch(8);
-
-    final CyclicBarrier barrier = new CyclicBarrier(8);
+    final CyclicBarrier barrier = new CyclicBarrier(9);
 
     public DrawerLayout drawerLayout;
 
@@ -115,6 +111,7 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (Button) findViewById(R.id.nav_button);
+        picImg = (ImageView) findViewById(R.id.pic_img);
 
         //获取缓存
         nowPrefs = getApplicationContext().getSharedPreferences("now", MODE_PRIVATE);
@@ -180,6 +177,7 @@ public class WeatherActivity extends AppCompatActivity {
                 requestNow(weatherId);
 //                latch.countDown();
                 try {
+                    Log.e("WA", "now" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -194,6 +192,7 @@ public class WeatherActivity extends AppCompatActivity {
                 requestForecast(weatherId);
 //                latch.countDown();
                 try {
+                    Log.e("WA", "fore" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -208,6 +207,7 @@ public class WeatherActivity extends AppCompatActivity {
                 requestAQI(weatherId);
 //                latch.countDown();
                 try {
+                    Log.e("WA", "aqi" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -222,6 +222,7 @@ public class WeatherActivity extends AppCompatActivity {
                 requestSuggestion(weatherId);
 //                latch.countDown();
                 try {
+                    Log.e("WA", "sugg" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -230,13 +231,7 @@ public class WeatherActivity extends AppCompatActivity {
                 }
             }
         }).start();
-//        try {
-//            Log.e("WA", "1");
-//            latch.await();
-//        } catch (InterruptedException e) {
-//            Log.e("WA", "2");
-//            e.printStackTrace();
-//        }
+        Log.e("WA", "we" + barrier.getNumberWaiting());
         barrier.await();
         Log.e("WA", "now" + now.status + now.update.updateTime);
         Log.e("WA", "forecast" + forecast.status + now.update.updateTime);
@@ -277,6 +272,7 @@ public class WeatherActivity extends AppCompatActivity {
                     mWeatherId = now.basic.weatherId;
                 }
                 try {
+                    Log.e("WA", "nowR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -314,6 +310,7 @@ public class WeatherActivity extends AppCompatActivity {
                     editor.putString("forecast", responseText).commit();
                 }
                 try {
+                    Log.e("WA", "foR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -354,6 +351,7 @@ public class WeatherActivity extends AppCompatActivity {
                     editor.putString("suggestion", responseText).commit();
                 }
                 try {
+                    Log.e("WA", "suR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -375,6 +373,7 @@ public class WeatherActivity extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
                 try {
+                    Log.e("WA", "" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException ex) {
                     ex.printStackTrace();
@@ -394,6 +393,7 @@ public class WeatherActivity extends AppCompatActivity {
                     editor.putString("air", responseText).commit();
                 }
                 try {
+                    Log.e("WA", "aR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
