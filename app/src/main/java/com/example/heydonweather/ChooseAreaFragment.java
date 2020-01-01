@@ -1,6 +1,8 @@
 package com.example.heydonweather;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -83,6 +85,11 @@ public class ChooseAreaFragment extends Fragment {
      */
     private int currentLevel;
 
+    /**
+     * 缓存
+     */
+    SharedPreferences prefs;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -102,7 +109,8 @@ public class ChooseAreaFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.e("cho","选择城市");
+        prefs = getContext().getSharedPreferences("weather", Context.MODE_PRIVATE);
+        Log.e("CAF", "开始选择城市");
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -121,7 +129,6 @@ public class ChooseAreaFragment extends Fragment {
                 }
             }
         });
-
 
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override

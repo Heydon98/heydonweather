@@ -1,11 +1,15 @@
 package com.example.heydonweather.gson;
 
+import android.widget.LinearLayout;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
  * 建议实体类
  */
 public class Suggestion {
+
+    public String status;
 
     @SerializedName("comf")
     public Comfort comfort;
