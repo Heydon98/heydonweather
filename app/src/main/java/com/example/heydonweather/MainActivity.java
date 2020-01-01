@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
             Suggestion suggestionSF = Utility.handleSuggestionResponse(suggestionString);
             Forecast forecastSF = Utility.handleForecastResponse(forecastString);
             AQI aqiSF = Utility.handleAQIResponse(airString);
-            Weather weather = new Weather(nowSF,forecastSF, suggestionSF, aqiSF);
+            Weather weather = new Weather(nowSF, forecastSF, suggestionSF, aqiSF);
             Intent intent = new Intent(this, WeatherActivity.class);
             startActivity(intent);
             finish();

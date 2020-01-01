@@ -128,7 +128,7 @@ public class WeatherActivity extends AppCompatActivity {
             Suggestion suggestionSF = Utility.handleSuggestionResponse(suggestionString);
             Forecast forecastSF = Utility.handleForecastResponse(forecastString);
             AQI aqiSF = Utility.handleAQIResponse(airString);
-            Weather weather = new Weather(nowSF,forecastSF, suggestionSF, aqiSF);
+            Weather weather = new Weather(nowSF, forecastSF, suggestionSF, aqiSF);
             mWeatherId = nowSF.basic.weatherId;
             showWeatherInfo(weather);
         } else {
@@ -177,7 +177,6 @@ public class WeatherActivity extends AppCompatActivity {
                 requestNow(weatherId);
 //                latch.countDown();
                 try {
-                    Log.e("WA", "now" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -192,7 +191,6 @@ public class WeatherActivity extends AppCompatActivity {
                 requestForecast(weatherId);
 //                latch.countDown();
                 try {
-                    Log.e("WA", "fore" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -207,7 +205,6 @@ public class WeatherActivity extends AppCompatActivity {
                 requestAQI(weatherId);
 //                latch.countDown();
                 try {
-                    Log.e("WA", "aqi" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -222,7 +219,6 @@ public class WeatherActivity extends AppCompatActivity {
                 requestSuggestion(weatherId);
 //                latch.countDown();
                 try {
-                    Log.e("WA", "sugg" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -231,7 +227,6 @@ public class WeatherActivity extends AppCompatActivity {
                 }
             }
         }).start();
-        Log.e("WA", "we" + barrier.getNumberWaiting());
         barrier.await();
         Log.e("WA", "now" + now.status + now.update.updateTime);
         Log.e("WA", "forecast" + forecast.status + now.update.updateTime);
@@ -263,7 +258,6 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
-                Log.e("WA", "实况数据返回值：" + responseText);
                 final Now nowResponse = Utility.handleNowResponse(responseText);
                 if (nowResponse != null && "ok".equals(nowResponse.status)) {
                     now = nowResponse;
@@ -272,7 +266,6 @@ public class WeatherActivity extends AppCompatActivity {
                     mWeatherId = now.basic.weatherId;
                 }
                 try {
-                    Log.e("WA", "nowR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -302,7 +295,6 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
-                Log.e("WA", "预报数据返回值：" + responseText);
                 final Forecast forecastResponse = Utility.handleForecastResponse(responseText);
                 if (forecastResponse != null && "ok".equals(forecastResponse.status)) {
                     forecast = forecastResponse;
@@ -310,7 +302,6 @@ public class WeatherActivity extends AppCompatActivity {
                     editor.putString("forecast", responseText).commit();
                 }
                 try {
-                    Log.e("WA", "foR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -343,7 +334,6 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
-                Log.e("WA", "生活数据返回值：" + responseText);
                 final Suggestion lifeStyleResponse = Utility.handleSuggestionResponse(responseText);
                 if (lifeStyleResponse != null && "ok".equals(lifeStyleResponse.status)) {
                     suggestion = lifeStyleResponse;
@@ -351,7 +341,6 @@ public class WeatherActivity extends AppCompatActivity {
                     editor.putString("suggestion", responseText).commit();
                 }
                 try {
-                    Log.e("WA", "suR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
@@ -373,7 +362,6 @@ public class WeatherActivity extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
                 try {
-                    Log.e("WA", "" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException ex) {
                     ex.printStackTrace();
@@ -385,7 +373,6 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
-                Log.e("WA", "空气数据返回值：" + responseText);
                 final AQI airResponse = Utility.handleAQIResponse(responseText);
                 if (airResponse != null && "ok".equals(airResponse.status)) {
                     aqi = airResponse;
@@ -393,13 +380,13 @@ public class WeatherActivity extends AppCompatActivity {
                     editor.putString("air", responseText).commit();
                 }
                 try {
-                    Log.e("WA", "aR" + barrier.getNumberWaiting());
                     barrier.await();
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }            }
+                }
+            }
         });
     }
 
