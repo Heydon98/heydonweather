@@ -21,14 +21,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences prefs;
-        prefs = getApplicationContext().getSharedPreferences("now", MODE_PRIVATE);
+        prefs = getBaseContext().getSharedPreferences("now", MODE_PRIVATE);
         String nowString = prefs.getString("now", null);
-        prefs = getApplicationContext().getSharedPreferences("forecast", MODE_PRIVATE);
+        prefs = getBaseContext().getSharedPreferences("forecast", MODE_PRIVATE);
         String forecastString = prefs.getString("forecast", null);
-        prefs = getApplicationContext().getSharedPreferences("suggest", MODE_PRIVATE);
+        prefs = getBaseContext().getSharedPreferences("suggestion", MODE_PRIVATE);
         String suggestionString = prefs.getString("suggestion", null);
-        prefs = getApplicationContext().getSharedPreferences("air", MODE_PRIVATE);
+        prefs = getBaseContext().getSharedPreferences("air", MODE_PRIVATE);
         String airString = prefs.getString("air", null);
+        Log.e("MA", "" + nowString);
+        Log.e("MA", "" + forecastString);
+        Log.e("MA", "" + suggestionString);
+        Log.e("MA", "" + airString);
         //判断是否存在天气缓存
         if (nowString != null && forecastString != null && suggestionString != null && airString != null) {
             Now nowSF = Utility.handleNowResponse(nowString);

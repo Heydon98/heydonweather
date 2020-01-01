@@ -1,13 +1,18 @@
 package com.example.heydonweather;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -18,6 +23,7 @@ import com.example.heydonweather.gson.Forecast;
 import com.example.heydonweather.gson.Now;
 import com.example.heydonweather.gson.Suggestion;
 import com.example.heydonweather.gson.Weather;
+import com.example.heydonweather.service.AutoUpdateService;
 import com.example.heydonweather.util.HttpUtil;
 import com.example.heydonweather.util.Utility;
 
@@ -56,7 +62,13 @@ public class WeatherActivity extends AppCompatActivity {
 
     private TextView sportText;
 
-    private SharedPreferences prefs;
+    private SharedPreferences nowPrefs;
+
+    private SharedPreferences forecastPrefs;
+
+    private SharedPreferences suggestionPrefs;
+
+    private SharedPreferences airPrefs;
 
     public SwipeRefreshLayout swipeRefresh;
 
@@ -71,7 +83,14 @@ public class WeatherActivity extends AppCompatActivity {
 
     private Suggestion suggestion;
 
+    /**
+     * 控制线程同步
+     */
     final CountDownLatch latch = new CountDownLatch(4);
+
+    public DrawerLayout drawerLayout;
+
+    private Button navButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,15 +110,18 @@ public class WeatherActivity extends AppCompatActivity {
         sportText = (TextView) findViewById(R.id.sport_text);
         swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navButton = (Button) findViewById(R.id.nav_button);
 
-        prefs = getApplicationContext().getSharedPreferences("now", MODE_PRIVATE);
-        String nowString = prefs.getString("now", null);
-        prefs = getApplicationContext().getSharedPreferences("forecast", MODE_PRIVATE);
-        String forecastString = prefs.getString("forecast", null);
-        prefs = getApplicationContext().getSharedPreferences("suggest", MODE_PRIVATE);
-        String suggestionString = prefs.getString("suggestion", null);
-        prefs = getApplicationContext().getSharedPreferences("air", MODE_PRIVATE);
-        String airString = prefs.getString("air", null);
+        //获取缓存
+        nowPrefs = getApplicationContext().getSharedPreferences("now", MODE_PRIVATE);
+        String nowString = nowPrefs.getString("now", null);
+        forecastPrefs = getApplicationContext().getSharedPreferences("forecast", MODE_PRIVATE);
+        String forecastString = forecastPrefs.getString("forecast", null);
+        suggestionPrefs = getApplicationContext().getSharedPreferences("suggestion", MODE_PRIVATE);
+        String suggestionString = suggestionPrefs.getString("suggestion", null);
+        airPrefs = getApplicationContext().getSharedPreferences("air", MODE_PRIVATE);
+        String airString = airPrefs.getString("air", null);
         if (nowString != null && forecastString != null && suggestionString != null && airString != null) {
             //有缓存直接显示
             Now nowSF = Utility.handleNowResponse(nowString);
@@ -107,6 +129,7 @@ public class WeatherActivity extends AppCompatActivity {
             Forecast forecastSF = Utility.handleForecastResponse(forecastString);
             AQI aqiSF = Utility.handleAQIResponse(airString);
             Weather weather = new Weather(nowSF,forecastSF, suggestionSF, aqiSF);
+            mWeatherId = nowSF.basic.weatherId;
             showWeatherInfo(weather);
         } else {
             //无缓存直接去服务器查询
@@ -114,10 +137,18 @@ public class WeatherActivity extends AppCompatActivity {
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
+        //下拉刷新监听
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 requestWeather(mWeatherId);
+            }
+        });
+        //切换城市按钮监听
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(GravityCompat.START);
             }
         });
     }
@@ -144,7 +175,7 @@ public class WeatherActivity extends AppCompatActivity {
         Log.e("WA", "AQI" + aqi.status);
         Log.e("WA", "suggestion" + suggestion.status);
         Weather weather = new Weather(now, forecast, suggestion, aqi);
-        JSONObject jsonObject = (JSONObject) JSONObject.wrap(weather);
+        swipeRefresh.setRefreshing(false);
         showWeatherInfo(weather);
 
     }
@@ -176,14 +207,13 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         if (nowResponse != null && "ok".equals(nowResponse.status)) {
                             now = nowResponse;
-                            SharedPreferences.Editor editor = prefs.edit();
+                            SharedPreferences.Editor editor = nowPrefs.edit();
                             editor.putString("now", responseText).commit();
                             mWeatherId = now.basic.weatherId;
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取实况失败,解析失败", Toast.LENGTH_SHORT).show();
                         }
                         Log.e("WA", "请求实况天气进程完成-成功");
-                        swipeRefresh.setRefreshing(false);
                         latch.countDown();
                     }
                 }).start();
@@ -218,7 +248,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         if (forecastResponse != null && "ok".equals(forecastResponse.status)) {
                             forecast = forecastResponse;
-                            SharedPreferences.Editor editor = prefs.edit();
+                            SharedPreferences.Editor editor = forecastPrefs.edit();
                             editor.putString("forecast", responseText).commit();
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取预报数据失败,解析失败", Toast.LENGTH_SHORT).show();
@@ -261,7 +291,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         if (lifeStyleResponse != null && "ok".equals(lifeStyleResponse.status)) {
                             suggestion = lifeStyleResponse;
-                            SharedPreferences.Editor editor = prefs.edit();
+                            SharedPreferences.Editor editor = suggestionPrefs.edit();
                             editor.putString("suggestion", responseText).commit();
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取生活数据失败,解析失败", Toast.LENGTH_SHORT).show();
@@ -304,7 +334,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         if (airResponse != null && "ok".equals(airResponse.status)) {
                             aqi = airResponse;
-                            SharedPreferences.Editor editor = prefs.edit();
+                            SharedPreferences.Editor editor = airPrefs.edit();
                             editor.putString("air", responseText).commit();
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取空气数据失败,解析失败", Toast.LENGTH_SHORT).show();
@@ -368,6 +398,7 @@ public class WeatherActivity extends AppCompatActivity {
             }
         }
         weatherLayout.setVisibility(View.VISIBLE);
-//
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 }
