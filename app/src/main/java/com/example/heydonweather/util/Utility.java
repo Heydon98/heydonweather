@@ -9,7 +9,6 @@ import com.example.heydonweather.db.County;
 import com.example.heydonweather.db.Province;
 import com.example.heydonweather.gson.AQI;
 import com.example.heydonweather.gson.Forecast;
-import com.example.heydonweather.gson.LifeStyle;
 import com.example.heydonweather.gson.Now;
 import com.example.heydonweather.gson.Suggestion;
 import com.example.heydonweather.gson.Weather;
@@ -131,12 +130,12 @@ public class Utility {
     /**
      * 解析返回的生活建议JSON数据
      */
-    public static LifeStyle handleLifeStyleResponse(String response) {
+    public static Suggestion handleSuggestionResponse(String response) {
         try {
             JSONObject jsonObject = new JSONObject(response);
             JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
-            String lifeStyleContent = jsonArray.getJSONObject(0).toString();
-            return new Gson().fromJson(lifeStyleContent, LifeStyle.class);
+            String suggestionContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(suggestionContent, Suggestion.class);
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -7,19 +7,37 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.example.heydonweather.gson.AQI;
+import com.example.heydonweather.gson.Forecast;
+import com.example.heydonweather.gson.Now;
+import com.example.heydonweather.gson.Suggestion;
+import com.example.heydonweather.gson.Weather;
+import com.example.heydonweather.util.Utility;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SharedPreferences prefs = getBaseContext().getSharedPreferences("weather", MODE_PRIVATE);
+        SharedPreferences prefs;
+        prefs = getApplicationContext().getSharedPreferences("now", MODE_PRIVATE);
+        String nowString = prefs.getString("now", null);
+        prefs = getApplicationContext().getSharedPreferences("forecast", MODE_PRIVATE);
+        String forecastString = prefs.getString("forecast", null);
+        prefs = getApplicationContext().getSharedPreferences("suggest", MODE_PRIVATE);
+        String suggestionString = prefs.getString("suggestion", null);
+        prefs = getApplicationContext().getSharedPreferences("air", MODE_PRIVATE);
+        String airString = prefs.getString("air", null);
         //判断是否存在天气缓存
-        if (prefs.getString("weather", null) != null) {
-
+        if (nowString != null && forecastString != null && suggestionString != null && airString != null) {
+            Now nowSF = Utility.handleNowResponse(nowString);
+            Suggestion suggestionSF = Utility.handleSuggestionResponse(suggestionString);
+            Forecast forecastSF = Utility.handleForecastResponse(forecastString);
+            AQI aqiSF = Utility.handleAQIResponse(airString);
+            Weather weather = new Weather(nowSF,forecastSF, suggestionSF, aqiSF);
             Intent intent = new Intent(this, WeatherActivity.class);
             startActivity(intent);
-            Log.e("main", "weatherA start");
             finish();
 
         }

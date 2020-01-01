@@ -4,6 +4,8 @@ import android.widget.LinearLayout;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 /**
  * 建议实体类
  */
@@ -11,32 +13,14 @@ public class Suggestion {
 
     public String status;
 
-    @SerializedName("comf")
-    public Comfort comfort;
+    @SerializedName("lifestyle")
+    public List<LifeStyle> lifeStyleList;
 
-    @SerializedName("cw")
-    public CarWash carWash;
+    public class LifeStyle {
 
-    public Sport sport;
+        public String type;
 
-    public class Comfort {
-
-        @SerializedName("txt")
-        public String info;
-
-    }
-
-    public class CarWash {
-
-        @SerializedName("txt")
-        public String info;
-
-    }
-
-    public class Sport {
-
-        @SerializedName("txt")
-        public String info;
+        public String txt;
 
     }
 

@@ -9,16 +9,27 @@ import java.util.List;
  */
 public class Weather {
 
-    public String status;
-
-    public Basic basic;
-
-    public AQI aqi;
-
     public Now now;
+
+    public Forecast forecast;
 
     public Suggestion suggestion;
 
-    @SerializedName("daily_forecast")
-    public List<Forecast> forecastList;     //由于daily_forecast包含的是一个数组，所以使用List引用
+    public AQI aqi;
+
+    /**
+     * 构造器
+     */
+    public Weather(Now now, Forecast forecast, Suggestion suggestion, AQI aqi) {
+
+        this.now = now;
+
+        this.forecast = forecast;
+
+        this.suggestion = suggestion;
+
+        this.aqi = aqi;
+
+    }
+
 }

@@ -2,6 +2,8 @@ package com.example.heydonweather.gson;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 /**
  * 未来预报实体类
  */
@@ -9,27 +11,20 @@ public class Forecast {
 
     public String status;
 
-    public String date;
+    @SerializedName("daily_forecast")
+    public List<DailyForecast> dailyForecastList;
 
-    @SerializedName("tmp")
-    public Temperature temperature;
+    public class DailyForecast {
 
-    @SerializedName("cond")
-    public More more;
+        public String date;
 
-    public class Temperature {
-
+        @SerializedName("tmp_max")
         public String max;
 
+        @SerializedName("tmp_min")
         public String min;
 
-    }
-
-    public class More {
-
-        @SerializedName("txt_d")
+        @SerializedName("cond_txt_d")
         public String info;
-
     }
-
 }

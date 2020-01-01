@@ -7,17 +7,39 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Now {
 
+    public Basic basic;
+
+    public class Basic {
+
+        @SerializedName("location")
+        public String cityName;
+
+        @SerializedName("cid")
+        public String weatherId;
+
+
+    }
+
     public String status;
 
-    @SerializedName("tmp")
-    public String tempreature;
+    public Update update;
 
-    @SerializedName("cond")
-    public More more;
+    public class Update {
 
-    public class More {
+        @SerializedName("loc")
+        public String updateTime;
 
-        @SerializedName("txt")
+    }
+
+    @SerializedName("now")
+    public NowWeather nowWeather;
+
+    public class NowWeather {
+
+        @SerializedName("tmp")
+        public String tempreature;
+
+        @SerializedName("cond_txt")
         public String info;
 
     }
