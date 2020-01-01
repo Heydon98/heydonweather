@@ -31,6 +31,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
@@ -86,7 +87,9 @@ public class WeatherActivity extends AppCompatActivity {
     /**
      * 控制线程同步
      */
-    final CountDownLatch latch = new CountDownLatch(4);
+//    final CountDownLatch latch = new CountDownLatch(8);
+
+    final CyclicBarrier barrier = new CyclicBarrier(8);
 
     public DrawerLayout drawerLayout;
 
@@ -135,13 +138,25 @@ public class WeatherActivity extends AppCompatActivity {
             //无缓存直接去服务器查询
             String weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            try {
+                requestWeather(weatherId);
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         //下拉刷新监听
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                requestWeather(mWeatherId);
+                try {
+                    requestWeather(mWeatherId);
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
         //切换城市按钮监听
@@ -156,25 +171,79 @@ public class WeatherActivity extends AppCompatActivity {
     /**
      * 根据天气id请求城市天气信息
      */
-    public void requestWeather(final String weatherId) {
+    public void requestWeather(final String weatherId) throws BrokenBarrierException, InterruptedException {
 
         Log.e("WA", "weatherId=" + weatherId);
-        requestNow(weatherId);
-        requestForecast(weatherId);
-        requestAQI(weatherId);
-        requestSuggestion(weatherId);
-        try {
-            Log.e("WA", "1");
-            latch.await();
-        } catch (InterruptedException e) {
-            Log.e("WA", "2");
-            e.printStackTrace();
-        }
-        Log.e("WA", "now" + now.status);
-        Log.e("WA", "forecast" + forecast.status);
-        Log.e("WA", "AQI" + aqi.status);
-        Log.e("WA", "suggestion" + suggestion.status);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                requestNow(weatherId);
+//                latch.countDown();
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                requestForecast(weatherId);
+//                latch.countDown();
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                requestAQI(weatherId);
+//                latch.countDown();
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                requestSuggestion(weatherId);
+//                latch.countDown();
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+//        try {
+//            Log.e("WA", "1");
+//            latch.await();
+//        } catch (InterruptedException e) {
+//            Log.e("WA", "2");
+//            e.printStackTrace();
+//        }
+        barrier.await();
+        Log.e("WA", "now" + now.status + now.update.updateTime);
+        Log.e("WA", "forecast" + forecast.status + now.update.updateTime);
+        Log.e("WA", "AQI" + aqi.status + now.update.updateTime);
+        Log.e("WA", "suggestion" + suggestion.status + now.update.updateTime);
         Weather weather = new Weather(now, forecast, suggestion, aqi);
+        barrier.reset();
         swipeRefresh.setRefreshing(false);
         showWeatherInfo(weather);
 
@@ -187,14 +256,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取实况数据失败", Toast.LENGTH_SHORT).show();
-                        Log.e("WA", "请求实况天气进程完成-失败");
-                        latch.countDown();
-                    }
-                });
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException ex) {
+                    ex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
             }
 
             @Override
@@ -202,21 +270,19 @@ public class WeatherActivity extends AppCompatActivity {
                 final String responseText = response.body().string();
                 Log.e("WA", "实况数据返回值：" + responseText);
                 final Now nowResponse = Utility.handleNowResponse(responseText);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (nowResponse != null && "ok".equals(nowResponse.status)) {
-                            now = nowResponse;
-                            SharedPreferences.Editor editor = nowPrefs.edit();
-                            editor.putString("now", responseText).commit();
-                            mWeatherId = now.basic.weatherId;
-                        } else {
-                            Toast.makeText(WeatherActivity.this, "获取实况失败,解析失败", Toast.LENGTH_SHORT).show();
-                        }
-                        Log.e("WA", "请求实况天气进程完成-成功");
-                        latch.countDown();
-                    }
-                }).start();
+                if (nowResponse != null && "ok".equals(nowResponse.status)) {
+                    now = nowResponse;
+                    SharedPreferences.Editor editor = nowPrefs.edit();
+                    editor.putString("now", responseText).commit();
+                    mWeatherId = now.basic.weatherId;
+                }
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -228,14 +294,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取预报数据失败", Toast.LENGTH_SHORT).show();
-                        Log.e("WA", "请求预报天气进程完成-失败");
-                        latch.countDown();
-                    }
-                });
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException ex) {
+                    ex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
             }
 
             @Override
@@ -243,20 +308,18 @@ public class WeatherActivity extends AppCompatActivity {
                 final String responseText = response.body().string();
                 Log.e("WA", "预报数据返回值：" + responseText);
                 final Forecast forecastResponse = Utility.handleForecastResponse(responseText);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (forecastResponse != null && "ok".equals(forecastResponse.status)) {
-                            forecast = forecastResponse;
-                            SharedPreferences.Editor editor = forecastPrefs.edit();
-                            editor.putString("forecast", responseText).commit();
-                        } else {
-                            Toast.makeText(WeatherActivity.this, "获取预报数据失败,解析失败", Toast.LENGTH_SHORT).show();
-                        }
-                        Log.e("WA", "请求预报天气进程完成-成功");
-                        latch.countDown();
-                    }
-                }).start();
+                if (forecastResponse != null && "ok".equals(forecastResponse.status)) {
+                    forecast = forecastResponse;
+                    SharedPreferences.Editor editor = forecastPrefs.edit();
+                    editor.putString("forecast", responseText).commit();
+                }
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -271,14 +334,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取生活数据失败", Toast.LENGTH_SHORT).show();
-                        Log.e("WA", "请求生活建议进程完成-失败");
-                        latch.countDown();
-                    }
-                });
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException ex) {
+                    ex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
             }
 
             @Override
@@ -286,20 +348,18 @@ public class WeatherActivity extends AppCompatActivity {
                 final String responseText = response.body().string();
                 Log.e("WA", "生活数据返回值：" + responseText);
                 final Suggestion lifeStyleResponse = Utility.handleSuggestionResponse(responseText);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (lifeStyleResponse != null && "ok".equals(lifeStyleResponse.status)) {
-                            suggestion = lifeStyleResponse;
-                            SharedPreferences.Editor editor = suggestionPrefs.edit();
-                            editor.putString("suggestion", responseText).commit();
-                        } else {
-                            Toast.makeText(WeatherActivity.this, "获取生活数据失败,解析失败", Toast.LENGTH_SHORT).show();
-                        }
-                        Log.e("WA", "请求生活建议进程完成-成功");
-                        latch.countDown();
-                    }
-                }).start();
+                if (lifeStyleResponse != null && "ok".equals(lifeStyleResponse.status)) {
+                    suggestion = lifeStyleResponse;
+                    SharedPreferences.Editor editor = suggestionPrefs.edit();
+                    editor.putString("suggestion", responseText).commit();
+                }
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -314,14 +374,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取空气数据失败", Toast.LENGTH_SHORT).show();
-                        Log.e("WA", "请求空气质量进程完成-失败");
-                        latch.countDown();
-                    }
-                });
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException ex) {
+                    ex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
             }
 
             @Override
@@ -329,21 +388,18 @@ public class WeatherActivity extends AppCompatActivity {
                 final String responseText = response.body().string();
                 Log.e("WA", "空气数据返回值：" + responseText);
                 final AQI airResponse = Utility.handleAQIResponse(responseText);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (airResponse != null && "ok".equals(airResponse.status)) {
-                            aqi = airResponse;
-                            SharedPreferences.Editor editor = airPrefs.edit();
-                            editor.putString("air", responseText).commit();
-                        } else {
-                            Toast.makeText(WeatherActivity.this, "获取空气数据失败,解析失败", Toast.LENGTH_SHORT).show();
-                        }
-                        Log.e("WA", "请求空气质量进程完成-成功");
-                        latch.countDown();
-                    }
-                }).start();
-            }
+                if (airResponse != null && "ok".equals(airResponse.status)) {
+                    aqi = airResponse;
+                    SharedPreferences.Editor editor = airPrefs.edit();
+                    editor.putString("air", responseText).commit();
+                }
+                try {
+                    barrier.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }            }
         });
     }
 

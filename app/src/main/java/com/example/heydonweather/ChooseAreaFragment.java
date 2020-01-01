@@ -31,6 +31,7 @@ import org.litepal.crud.DataSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -133,7 +134,13 @@ public class ChooseAreaFragment extends Fragment {
                         WeatherActivity activity = (WeatherActivity) getActivity();
                         activity.drawerLayout.closeDrawers();
                         activity.swipeRefresh.setRefreshing(true);
-                        activity.requestWeather(weatherId);
+                        try {
+                            activity.requestWeather(weatherId);
+                        } catch (BrokenBarrierException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
